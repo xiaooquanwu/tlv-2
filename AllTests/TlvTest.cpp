@@ -29,10 +29,40 @@ TEST_GROUP(TLV)
   }
 };
 
+
+TEST(TLV, ParseTagClassFieldSuccessfully)
+{
+  uint8_t uni[] = { 0x00 }, pri[] = { 0xC0 };
+  Tlv_t tlv;
+
+  CHECK(TlvParse(uni, sizeof(uni), &tlv));
+  LONGS_EQUAL(TAG_CLASS_UNI, TlvTagClass(&tlv));
+
+  CHECK(TlvParse(pri, sizeof(pri), &tlv));
+  LONGS_EQUAL(TAG_CLASS_PRI, TlvTagClass(&tlv));
+}
+
+TEST(TLV, ParseIsPrimitiveFieldSuccessfully)
+{
+  uint8_t primitive[] = { 0x00 }, constructed[] = { 0x20 };
+  Tlv_t tlv;
+
+  CHECK(TlvParse(primitive, sizeof(primitive), &tlv));
+  CHECK(!TlvIsConstructed(&tlv));
+
+  CHECK(TlvParse(constructed, sizeof(constructed), &tlv));
+  CHECK(TlvIsConstructed(&tlv));
+}
+
 TEST(TLV, ParseTlv1DataSuccessfully)
 {
   Tlv_t tlv;
+  // parse
   CHECK(TlvParse(tlv1Data, sizeof(tlv1Data), &tlv));
+  // tag class
   LONGS_EQUAL(TAG_CLASS_APP, TlvTagClass(&tlv));
-  CHECK(!TlvIsPrimitive(&tlv));
+  // Primitive or constructed
+  CHECK(TlvIsConstructed(&tlv));
+  // tag number
+  LONGS_EQUAL(0x10, TlvTagNum(&tlv));
 }

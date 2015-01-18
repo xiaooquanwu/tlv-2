@@ -12,19 +12,33 @@
 
 #include <stdbool.h>
 
+
+/** Defines values of tag class */
 typedef enum {
+  /** universal class */
   TAG_CLASS_UNI = 0,
+  /** application class */
   TAG_CLASS_APP = 1,
-  TAG_CLASS_CONTEXT = 2,
-  TAG_CLASS_PRIVATE = 3
+  /** context specific class */
+  TAG_CLASS_CON = 2,
+  /** private class */
+  TAG_CLASS_PRI = 3
 } TagClass_t;
 
-typedef struct {
-  TagClass_t tagClass;
-  bool isPrimitive;
-  uint16_t tagNum;
-} Tlv_t;
 
+/** type for tag number
+ * Note: Only support 2 bytes tag, so 2 bytes tag num is enough */
+typedef uint16_t TagNum_t;
+
+/** type for tlv object */
+typedef struct {
+  /** tag class */
+  TagClass_t tagClass;
+  /** true on constructed TLV, false on primitive TLV */
+  bool isConstructed;
+  /** tag number */
+  TagNum_t tagNum;
+} Tlv_t;
 
 /**
  * Getters of tagClass field of tlv object
@@ -37,13 +51,23 @@ static inline TagClass_t TlvTagClass(Tlv_t *tlv)
 }
 
 /**
- * Getters of isPrimitive field of tlv object
+ * Getters of isConstructed field of tlv object
  * @param tlv address of tlv object
- * @return the value of isPrimitive field
+ * @return the value of isConstructed field
  */
-static inline bool TlvIsPrimitive(Tlv_t *tlv)
+static inline bool TlvIsConstructed(Tlv_t *tlv)
 {
-  return tlv->isPrimitive;
+  return tlv->isConstructed;
+}
+
+/**
+ * Getters of tagNum field of tlv object
+ * @param tlv address of tlv object
+ * @return the value of tagNum field
+ */
+static inline TagNum_t TlvTagNum(Tlv_t *tlv)
+{
+  return tlv->tagNum;
 }
 
 /**
