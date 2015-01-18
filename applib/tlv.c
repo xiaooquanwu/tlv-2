@@ -49,6 +49,8 @@ static bool parseTag(const uint8_t **pcur, const uint8_t *end, Tlv_t *tlv)
   uint8_t octet;
   if (*pcur >= end) return false;
 
+  tlv->ptr = (uint8_t *)(*pcur);
+
   octet = nextOctet(*pcur);
   tlv->tagClass = getTagClass(octet);
   tlv->isConstructed = getIsConstructed(octet);
@@ -67,6 +69,7 @@ static inline bool validateLengthLongFmtByteNum(uint8_t num)
 {
   return (num >= LENGTH_LONGFMT_MINBYTES) && (num <= LENGTH_LONGFMT_MAXBYTES);
 }
+
 /**
  * parse the length part of encoding buffer pointed by *pcur
  * @param pcur the pointer of pointer to the current position of the buffer
@@ -87,6 +90,7 @@ static bool parseLength(const uint8_t **pcur, const uint8_t *end, Tlv_t *tlv)
     tlv->length = getLength(octet);
     return true;
   }
+
   /* the following is handling long format */
   numOfBytes = getLength(octet);
   if (!validateLengthLongFmtByteNum(numOfBytes)) return false;
@@ -94,9 +98,27 @@ static bool parseLength(const uint8_t **pcur, const uint8_t *end, Tlv_t *tlv)
   for (i = 0; i < numOfBytes; i++) {
     if (*pcur >= end) return false;
     octet = nextOctet(*pcur);
+    /* concatenate the octet to length */
     tlv->length <<= LENGTH_LONGFMT_BITS;
     tlv->length |= octet;
   }
+  return true;
+}
+
+/**
+ * parse the value part of encoding buffer pointed by *pcur.
+ * @param pcur the pointer of pointer to the current position of the buffer
+ * @param end the pointer to one more than the last octet in the buffer
+ * @param tlv tlv object, tlv object should have valid length value
+ * @return true on success, false on error. pcur is moved to the next
+ * not consumed octet, tlv is updated with parsed length information
+ */
+static bool parseValue(const uint8_t **pcur, const uint8_t *end, Tlv_t *tlv)
+{
+  /* if not all content are in the buffer */
+  if ((*pcur + tlv->length) > end) return false;
+
+  tlv->value = (uint8_t *)(*pcur);
   return true;
 }
 
@@ -111,6 +133,6 @@ bool TlvParse(const uint8_t *buffer, size_t length, Tlv_t *tlv)
 
   if (!parseTag(&cur, end, tlv)) return false;
   if (!parseLength(&cur, end, tlv)) return false;
-
+  if (!parseValue(&cur, end, tlv)) return false;
   return true;
 }

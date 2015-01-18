@@ -4,10 +4,14 @@
  * Description: TLV stands for tag-length-value or type-length-value.
  * Here BER encoding is implemented
  *
- * TLV is a recursive structure, it defined as:
+ * BER-TLV is a recursive structure, it defined as:
  *   1. tlv is either a primitive TLV, that its content is a data value
  *   2. Or tlv is a constructed TLV, that its content is one or more TLVs
  *
+ * Constrains:
+ *   1. Tag is at most 2 bytes
+ *   2. long format length is at most 2 octets (totally 3 octets including the
+ *   initial octet)
  */
 
 #include <stdbool.h>
@@ -46,6 +50,10 @@ typedef struct {
   TagNum_t tagNum;
   /** Length */
   Length_t length;
+  /** points to the whole encoded tlv object in the buffer */
+  uint8_t *ptr;
+  /** points to the value part of the encoded tlv object in the buffer */
+  uint8_t *value;
 } Tlv_t;
 
 /**
@@ -86,6 +94,26 @@ static inline TagNum_t TlvTagNum(Tlv_t *tlv)
 static inline Length_t TlvLength(Tlv_t *tlv)
 {
   return tlv->length;
+}
+
+/**
+ * Getters of ptr field of tlv object
+ * @param tlv address of tlv object
+ * @return the value of ptr field
+ */
+static inline uint8_t* TlvPtr(Tlv_t *tlv)
+{
+  return tlv->ptr;
+}
+
+/**
+ * Getters of value field of tlv object
+ * @param tlv address of tlv object
+ * @return the value of value field
+ */
+static inline uint8_t* TlvValue(Tlv_t *tlv)
+{
+  return tlv->value;
 }
 
 /**
