@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdio.h>
 #include "tlv.h"
 
 #define TAGCLASS_MASK 0xC0      /* b1100 0000 */
@@ -17,6 +18,7 @@
 #define LENGTH_FMT_MASK 0x80        /* b1000 0000 */
 #define LENGTH_LONGFMT_MINBYTES 1
 #define LENGTH_LONGFMT_MAXBYTES 2
+#define LENGTH_LONGFMT_BITS 8   /* 8 bits are used for forming a length value */
 
 #define getTagClass(octet) ((octet & TAGCLASS_MASK) >> TAGCLASS_SHIFT)
 #define getIsConstructed(octet) ((octet & ISCONSTRUCTED_MASK) >> \
@@ -76,9 +78,11 @@ static inline bool validateLengthLongFmtByteNum(uint8_t num)
 static bool parseLength(const uint8_t **pcur, const uint8_t *end, Tlv_t *tlv)
 {
   uint8_t octet = 0, numOfBytes = 0;
-  if (*pcur >= end) return false;
+  int i = 0;
 
+  if (*pcur >= end) return false;
   octet = nextOctet(*pcur);
+
   if (lengthIsShortFmt(octet)) {
     tlv->length = getLength(octet);
     return true;
@@ -86,6 +90,13 @@ static bool parseLength(const uint8_t **pcur, const uint8_t *end, Tlv_t *tlv)
   /* the following is handling long format */
   numOfBytes = getLength(octet);
   if (!validateLengthLongFmtByteNum(numOfBytes)) return false;
+  tlv->length = 0;
+  for (i = 0; i < numOfBytes; i++) {
+    if (*pcur >= end) return false;
+    octet = nextOctet(*pcur);
+    tlv->length <<= LENGTH_LONGFMT_BITS;
+    tlv->length |= octet;
+  }
   return true;
 }
 

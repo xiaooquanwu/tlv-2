@@ -83,11 +83,9 @@ TEST(TLV, ParseLengthBITSuccessfully)
   uint8_t tagNum1ShortFmtMax[] = {0x01, 0x7F};   // minimum tag number and max in short format
   uint8_t tagNum1LongFmt0Byte[] = {0x01, 0x80, 0x84}; // wrong 0 byte long format
   uint8_t tagNum1LongFmt3Bytes[] = {0x01, 0x83, 0x84}; // wrong 3 bytes long format
-  //  uint8_t tagNum1LongFmt132[] = {0x01, 0x81, 0x84}; // minimum tag number and min in long format
-  //  uint8_t tagNum2[] = {0x01, 0x01};   // minimum tag number and long len
-  // uint8_t tagNum30[] = {0x1E, 0x00};  // max tag number expressed in 1 byte
-  // uint8_t tagNum31[] = {0x1F, 0x1F}; // minimum tag number expressed in 2bytes
-  // uint8_t tagNum127[] = {0x1F, 0x7F}; // maximum tag number expressed in 2 bytes
+  uint8_t tagNum1LongFmt132[] = {0x01, 0x81, 0x84}; // minimum tag number and min in long format
+  uint8_t tagNum1LongFmt257[] = {0x01, 0x82, 0x01, 0x01}; // minimum tag number and 257 in long format
+  uint8_t tagNum31LongFmt65535[] = {0x1F, 0x1F, 0x82, 0xff, 0xff}; // 2 tag bytes and max in long format
   Tlv_t tlv;
 
   CHECK(TlvParse(tagNum1ShortFmtMin, sizeof(tagNum1ShortFmtMin), &tlv));
@@ -99,18 +97,14 @@ TEST(TLV, ParseLengthBITSuccessfully)
   CHECK(!TlvParse(tagNum1LongFmt0Byte, sizeof(tagNum1LongFmt0Byte), &tlv));
   CHECK(!TlvParse(tagNum1LongFmt3Bytes, sizeof(tagNum1LongFmt3Bytes), &tlv));
 
-  // CHECK(TlvParse(tagNum1LongFmt132, sizeof(tagNum1LongFmt132), &tlv));
-  // LONGS_EQUAL(132, TlvLength(&tlv));
+  CHECK(TlvParse(tagNum1LongFmt132, sizeof(tagNum1LongFmt132), &tlv));
+  LONGS_EQUAL(132, TlvLength(&tlv));
 
-  // CHECK(TlvParse(tagNum30, sizeof(tagNum30), &tlv));
-  // LONGS_EQUAL(30, TlvTagNum(&tlv));
+  CHECK(TlvParse(tagNum1LongFmt257, sizeof(tagNum1LongFmt257), &tlv));
+  LONGS_EQUAL(257, TlvLength(&tlv));
 
-  // CHECK(TlvParse(tagNum31, sizeof(tagNum31), &tlv));
-  // LONGS_EQUAL(31, TlvTagNum(&tlv));
-
-  // CHECK(TlvParse(tagNum127, sizeof(tagNum127), &tlv));
-  // LONGS_EQUAL(127, TlvTagNum(&tlv));
-
+  CHECK(TlvParse(tagNum31LongFmt65535, sizeof(tagNum31LongFmt65535), &tlv));
+  LONGS_EQUAL(65535, TlvLength(&tlv));
 }
 
 TEST(TLV, ParseTlv1DataSuccessfully)
