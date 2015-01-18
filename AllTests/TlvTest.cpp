@@ -30,7 +30,7 @@ TEST_GROUP(TLV)
 };
 
 
-TEST(TLV, ParseTagClassFieldSuccessfully)
+TEST(TLV, ParseTagClassBITSuccessfully)
 {
   uint8_t uni[] = { 0x00 }, pri[] = { 0xC0 };
   Tlv_t tlv;
@@ -42,7 +42,7 @@ TEST(TLV, ParseTagClassFieldSuccessfully)
   LONGS_EQUAL(TAG_CLASS_PRI, TlvTagClass(&tlv));
 }
 
-TEST(TLV, ParseIsPrimitiveFieldSuccessfully)
+TEST(TLV, ParsePorCBITSuccessfully)
 {
   uint8_t primitive[] = { 0x00 }, constructed[] = { 0x20 };
   Tlv_t tlv;
@@ -52,6 +52,28 @@ TEST(TLV, ParseIsPrimitiveFieldSuccessfully)
 
   CHECK(TlvParse(constructed, sizeof(constructed), &tlv));
   CHECK(TlvIsConstructed(&tlv));
+}
+
+TEST(TLV, ParseTagNumberBITSuccessfully)
+{
+  uint8_t tagNum1[] = {0x01};   // minimum tag number
+  uint8_t tagNum30[] = {0x1E};  // max tag number expressed in 1 byte
+  uint8_t tagNum31[] = {0x1F, 0x1F}; // minimum tag number expressed in 2bytes
+  uint8_t tagNum127[] = {0x1F, 0x7F}; // maximum tag number expressed in 2 bytes
+  Tlv_t tlv;
+
+  CHECK(TlvParse(tagNum1, sizeof(tagNum1), &tlv));
+  LONGS_EQUAL(1, TlvTagNum(&tlv));
+
+  CHECK(TlvParse(tagNum30, sizeof(tagNum30), &tlv));
+  LONGS_EQUAL(30, TlvTagNum(&tlv));
+
+  CHECK(TlvParse(tagNum31, sizeof(tagNum31), &tlv));
+  LONGS_EQUAL(31, TlvTagNum(&tlv));
+
+  CHECK(TlvParse(tagNum127, sizeof(tagNum127), &tlv));
+  LONGS_EQUAL(127, TlvTagNum(&tlv));
+
 }
 
 TEST(TLV, ParseTlv1DataSuccessfully)
