@@ -1,0 +1,8 @@
+*.a
+objs/
+lib/
+*_tests
+\#*
+TAGS
+.DS_Store
+html/
