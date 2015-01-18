@@ -27,8 +27,14 @@ typedef enum {
 
 
 /** type for tag number
- * Note: Only support 2 bytes tag, so 2 bytes tag num is enough */
-typedef uint16_t TagNum_t;
+ * Note: Only support 2 bytes tag, so 1 bytes tag num is enough as the
+ * max is 127 */
+typedef uint8_t TagNum_t;
+
+/** type for length
+ * Note: at most 2 bytes for length encoding is support,
+ * max is 0x7FFF (b1111111 1111111) */
+typedef uint16_t Length_t;
 
 /** type for tlv object */
 typedef struct {
@@ -38,6 +44,8 @@ typedef struct {
   bool isConstructed;
   /** tag number */
   TagNum_t tagNum;
+  /** Length */
+  Length_t length;
 } Tlv_t;
 
 /**
@@ -68,6 +76,16 @@ static inline bool TlvIsConstructed(Tlv_t *tlv)
 static inline TagNum_t TlvTagNum(Tlv_t *tlv)
 {
   return tlv->tagNum;
+}
+
+/**
+ * Getters of len field of tlv object
+ * @param tlv address of tlv object
+ * @return the value of length field
+ */
+static inline Length_t TlvLength(Tlv_t *tlv)
+{
+  return tlv->length;
 }
 
 /**

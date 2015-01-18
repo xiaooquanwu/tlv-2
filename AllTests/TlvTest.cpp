@@ -29,10 +29,9 @@ TEST_GROUP(TLV)
   }
 };
 
-
 TEST(TLV, ParseTagClassBITSuccessfully)
 {
-  uint8_t uni[] = { 0x00 }, pri[] = { 0xC0 };
+  uint8_t uni[] = {0x00, 0x00}, pri[] = { 0xC0, 0x00};
   Tlv_t tlv;
 
   CHECK(TlvParse(uni, sizeof(uni), &tlv));
@@ -44,7 +43,7 @@ TEST(TLV, ParseTagClassBITSuccessfully)
 
 TEST(TLV, ParsePorCBITSuccessfully)
 {
-  uint8_t primitive[] = { 0x00 }, constructed[] = { 0x20 };
+  uint8_t primitive[] = {0x00, 0x00}, constructed[] = {0x20, 0x00};
   Tlv_t tlv;
 
   CHECK(TlvParse(primitive, sizeof(primitive), &tlv));
@@ -56,10 +55,11 @@ TEST(TLV, ParsePorCBITSuccessfully)
 
 TEST(TLV, ParseTagNumberBITSuccessfully)
 {
-  uint8_t tagNum1[] = {0x01};   // minimum tag number
-  uint8_t tagNum30[] = {0x1E};  // max tag number expressed in 1 byte
-  uint8_t tagNum31[] = {0x1F, 0x1F}; // minimum tag number expressed in 2bytes
-  uint8_t tagNum127[] = {0x1F, 0x7F}; // maximum tag number expressed in 2 bytes
+  uint8_t tagNum1[] = {0x01, 0x01};   // minimum tag number
+  uint8_t tagNum30[] = {0x1E, 0x01};  // max tag number expressed in 1 byte
+  uint8_t tagNum31[] = {0x1F, 0x1F, 0x01}; // minimum tag number expressed in 2bytes
+  uint8_t tagNum127[] = {0x1F, 0x7F, 0x01}; // maximum tag number expressed in 2 bytes
+  uint8_t tagNumError[] = {0x1F, 0xEF, 0x01}; // b8 in the second byte is not 0
   Tlv_t tlv;
 
   CHECK(TlvParse(tagNum1, sizeof(tagNum1), &tlv));
@@ -73,6 +73,29 @@ TEST(TLV, ParseTagNumberBITSuccessfully)
 
   CHECK(TlvParse(tagNum127, sizeof(tagNum127), &tlv));
   LONGS_EQUAL(127, TlvTagNum(&tlv));
+
+  CHECK(!TlvParse(tagNumError, sizeof(tagNumError), &tlv));
+}
+
+TEST(TLV, ParseLengthBITSuccessfully)
+{
+  uint8_t tagNum1[] = {0x01, 0x01};   // minimum tag number and short len
+  // uint8_t tagNum30[] = {0x1E, 0x00};  // max tag number expressed in 1 byte
+  // uint8_t tagNum31[] = {0x1F, 0x1F}; // minimum tag number expressed in 2bytes
+  // uint8_t tagNum127[] = {0x1F, 0x7F}; // maximum tag number expressed in 2 bytes
+  Tlv_t tlv;
+
+  CHECK(TlvParse(tagNum1, sizeof(tagNum1), &tlv));
+  LONGS_EQUAL(1, TlvLength(&tlv));
+
+  // CHECK(TlvParse(tagNum30, sizeof(tagNum30), &tlv));
+  // LONGS_EQUAL(30, TlvTagNum(&tlv));
+
+  // CHECK(TlvParse(tagNum31, sizeof(tagNum31), &tlv));
+  // LONGS_EQUAL(31, TlvTagNum(&tlv));
+
+  // CHECK(TlvParse(tagNum127, sizeof(tagNum127), &tlv));
+  // LONGS_EQUAL(127, TlvTagNum(&tlv));
 
 }
 
