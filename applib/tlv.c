@@ -14,6 +14,9 @@
 #define TAGNUM_b8 0x80       /* bit 8 in a byte */
 
 #define LENGTH_MASK 0x7F        /* b0111 1111 */
+#define LENGTH_FMT_MASK 0x80        /* b1000 0000 */
+#define LENGTH_LONGFMT_MINBYTES 1
+#define LENGTH_LONGFMT_MAXBYTES 2
 
 #define getTagClass(octet) ((octet & TAGCLASS_MASK) >> TAGCLASS_SHIFT)
 #define getIsConstructed(octet) ((octet & ISCONSTRUCTED_MASK) >> \
@@ -22,7 +25,10 @@
 #define tagNumIsMultiBytes(octet) (getTagNumOfB1(octet) == TAGNUM_B1_2BYTES)
 #define getTagNumOfB2(octet) (octet & TAGNUM_B2_MASK)
 #define isNotLastByteOfTagNum(octet) (octet & TAGNUM_b8)
+
 #define getLength(octet) (octet & LENGTH_MASK)
+#define lengthIsShortFmt(octet) (!(octet & LENGTH_FMT_MASK))
+
 /* cur is uint8 *, the value of octet that cur points to is returned
    and cur is moved to next as well */
 #define nextOctet(cur) (*((cur)++))
@@ -55,6 +61,10 @@ static bool parseTag(const uint8_t **pcur, const uint8_t *end, Tlv_t *tlv)
   return true;
 }
 
+static inline bool validateLengthLongFmtByteNum(uint8_t num)
+{
+  return (num >= LENGTH_LONGFMT_MINBYTES) && (num <= LENGTH_LONGFMT_MAXBYTES);
+}
 /**
  * parse the length part of encoding buffer pointed by *pcur
  * @param pcur the pointer of pointer to the current position of the buffer
@@ -65,11 +75,17 @@ static bool parseTag(const uint8_t **pcur, const uint8_t *end, Tlv_t *tlv)
  */
 static bool parseLength(const uint8_t **pcur, const uint8_t *end, Tlv_t *tlv)
 {
-  uint8_t octet;
+  uint8_t octet = 0, numOfBytes = 0;
   if (*pcur >= end) return false;
 
   octet = nextOctet(*pcur);
-  tlv->length = getLength(octet);
+  if (lengthIsShortFmt(octet)) {
+    tlv->length = getLength(octet);
+    return true;
+  }
+  /* the following is handling long format */
+  numOfBytes = getLength(octet);
+  if (!validateLengthLongFmtByteNum(numOfBytes)) return false;
   return true;
 }
 
