@@ -189,8 +189,6 @@ static bool tagIsMatch(uint16_t tag, Tlv_t *tlv)
 bool TlvSearchTag(const uint8_t *buffer, size_t length, uint16_t tag,
                          bool recursive, Tlv_t *tlv)
 {
-  Tlv_t childTlv;
-
   const uint8_t *  cur = buffer;
   size_t  left = length;
   const uint8_t *  end = buffer + left;
@@ -198,18 +196,19 @@ bool TlvSearchTag(const uint8_t *buffer, size_t length, uint16_t tag,
   while (cur < end) {
     if (!TlvParse(cur, left, tlv)) return false;
     if (tagIsMatch(tag, tlv)) return true;
-    /* search depth first */
-    if (recursive && TlvIsConstructed(tlv)) {
-      if (TlvSearchTag(TlvValue(tlv), TlvLength(tlv),
-                      tag, true, &childTlv)) {
-        *tlv = childTlv;
-        return true;
-      }
-    }
+
     /* move cur to the end of the tlv object. It points to the
        first unparsed octet */
     cur = TlvEnd(tlv);
     left = (size_t)(end - cur);
+
+    /* search depth first */
+    if (recursive && TlvIsConstructed(tlv)) {
+      if (TlvSearchTag(TlvValue(tlv), TlvLength(tlv),
+                      tag, true, tlv)) {
+        return true;
+      }
+    }
   }
 
   return false;
