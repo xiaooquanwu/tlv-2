@@ -24,7 +24,7 @@ const uint8_t tlv3Data[] =  {
   0x90,0x00
 };
 
-TEST_GROUP(TLV)
+TEST_GROUP(TLVDecoder)
 {
   void setup()
   {
@@ -36,7 +36,7 @@ TEST_GROUP(TLV)
   }
 };
 
-TEST(TLV, ParseTagClassBITSuccessfully)
+TEST(TLVDecoder, ParseTagClassBITSuccessfully)
 {
   uint8_t uni[] = {0x01, 0x00}, pri[] = { 0xC0, 0x00};
   Tlv_t tlv;
@@ -48,7 +48,7 @@ TEST(TLV, ParseTagClassBITSuccessfully)
   LONGS_EQUAL(TAG_CLASS_PRI, TlvTagClass(&tlv));
 }
 
-TEST(TLV, ParsePorCBITSuccessfully)
+TEST(TLVDecoder, ParsePorCBITSuccessfully)
 {
   uint8_t primitive[] = {0x01, 0x00}, constructed[] = {0x20, 0x00};
   Tlv_t tlv;
@@ -60,7 +60,7 @@ TEST(TLV, ParsePorCBITSuccessfully)
   CHECK(TlvIsConstructed(&tlv));
 }
 
-TEST(TLV, ParseTagNumberBITSuccessfully)
+TEST(TLVDecoder, ParseTagNumberBITSuccessfully)
 {
   uint8_t tagNum1[50] = {0x01, 0x01};   // minimum tag number
   uint8_t tagNum30[50] = {0x1E, 0x01};  // max tag number expressed in 1 byte
@@ -84,7 +84,7 @@ TEST(TLV, ParseTagNumberBITSuccessfully)
   CHECK(!TlvParse(tagNumError, sizeof(tagNumError), &tlv));
 }
 
-TEST(TLV, ParseLengthBITSuccessfully)
+TEST(TLVDecoder, ParseLengthBITSuccessfully)
 {
   uint8_t tagNum1ShortFmtMin[128] = {0x01, 0x01};   // minimum tag number and min in short format
   uint8_t tagNum1ShortFmtMax[256] = {0x01, 0x7F};   // minimum tag number and max in short format
@@ -114,7 +114,7 @@ TEST(TLV, ParseLengthBITSuccessfully)
   LONGS_EQUAL(65535, TlvLength(&tlv));
 }
 
-TEST(TLV, ParseValueBITSuccessfully)
+TEST(TLVDecoder, ParseValueBITSuccessfully)
 {
   uint8_t tagNum1Length1[] = {0x01, 0x01, 00};
   uint8_t tagNum1NoValuePart[] = {0x01, 0x01};
@@ -127,7 +127,7 @@ TEST(TLV, ParseValueBITSuccessfully)
 
 }
 
-TEST(TLV, LeadingZeroBytesIsSkippeduccessfully)
+TEST(TLVDecoder, LeadingZeroBytesIsSkippeduccessfully)
 {
   uint8_t tagNum1Length1[] = {0x00, 0x01, 0x01, 00};
   uint8_t tagNumError[] = {0x00, 0x00, 0x00};
@@ -141,7 +141,7 @@ TEST(TLV, LeadingZeroBytesIsSkippeduccessfully)
   CHECK(!TlvParse(tagNumError, sizeof(tagNumError), &tlv));
 }
 
-TEST(TLV, ParseTlv1DataSuccessfully)
+TEST(TLVDecoder, ParseTlv1DataSuccessfully)
 {
   Tlv_t tlv;
   // parse
@@ -160,7 +160,7 @@ TEST(TLV, ParseTlv1DataSuccessfully)
   POINTERS_EQUAL(&tlv1Data[2], TlvValue(&tlv));
 }
 
-IGNORE_TEST(TLV, ParseTlv3DataHavingInvalidTagSuccessfully)
+IGNORE_TEST(TLVDecoder, ParseTlv3DataHavingInvalidTagSuccessfully)
 {
   Tlv_t tlv;
   // parse
@@ -179,7 +179,7 @@ IGNORE_TEST(TLV, ParseTlv3DataHavingInvalidTagSuccessfully)
   POINTERS_EQUAL(&tlv1Data[4], TlvValue(&tlv));
 }
 
-TEST(TLV, SuccessfullySearchTagFromOneTVL)
+TEST(TLVDecoder, SuccessfullySearchTagFromOneTVL)
 {
   Tlv_t tlv;
 
@@ -187,7 +187,7 @@ TEST(TLV, SuccessfullySearchTagFromOneTVL)
   LONGS_EQUAL(16, TlvTagNum(&tlv));
 }
 
-TEST(TLV, SearchNonExistTagReturnFailure)
+TEST(TLVDecoder, SearchNonExistTagReturnFailure)
 {
   Tlv_t tlv;
 
@@ -197,7 +197,7 @@ TEST(TLV, SearchNonExistTagReturnFailure)
 
 }
 
-TEST(TLV, SuccessfullySearchTagFromSeveralTVLsOnTheSameLevel)
+TEST(TLVDecoder, SuccessfullySearchTagFromSeveralTVLsOnTheSameLevel)
 {
   Tlv_t tlv;
   uint8_t *children;
@@ -217,7 +217,7 @@ TEST(TLV, SuccessfullySearchTagFromSeveralTVLsOnTheSameLevel)
   LONGS_EQUAL(31, TlvTagNum(&tlv));
 }
 
-TEST(TLV, SuccessfullySearchTagRecursively)
+TEST(TLVDecoder, SuccessfullySearchTagRecursively)
 {
   Tlv_t tlv;
 
