@@ -26,3 +26,4 @@
  */
 
 IMPORT_TEST_GROUP( TLVDecoder);
+IMPORT_TEST_GROUP( TLVEncoder);
