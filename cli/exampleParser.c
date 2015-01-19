@@ -102,6 +102,7 @@ static void printLength(Length_t len, uint16_t level)
 static void printIsConstructed(bool isConstructed, uint16_t level)
 {
   printIndent(level);
+  /* bool in standard is 0 or 1, we use this feature to access the array */
   printf("Primitive Or Constructed: %d - %s\n",
          isConstructed, pOrCStr[isConstructed]);
 }
@@ -119,13 +120,13 @@ static void printData(uint8_t data[], Length_t len, uint16_t level)
 
 static void printTlv(Tlv_t *tlv, uint16_t level)
 {
-  printTagClass(tlv->tagClass, level);
-  printTagNum(tlv->tagNum, level);
-  printLength(tlv->length, level);
-  printIsConstructed(tlv->isConstructed, level);
+  printTagClass(TlvTagClass(tlv), level);
+  printTagNum(TlvTagNum(tlv), level);
+  printLength(TlvLength(tlv), level);
+  printIsConstructed(TlvIsConstructed(tlv), level);
 
   /* Print data value if it's primitive */
-  if (!tlv->isConstructed) {
+  if (!TlvIsConstructed(tlv)) {
     printf("\n");
     return;
   }
@@ -145,15 +146,15 @@ static void traverseTvl(Tlv_t *tlv, uint16_t level)
 
   printTlv(tlv, level);
 
-  if (!tlv->isConstructed) {
+  if (!TlvIsConstructed(tlv)) {
     return;
   }
   /* one more depth */
   level++;
 
-  cur = tlv->value;
+  cur = TlvValue(tlv);
   /* the left octets unhandled in the TLV. Nonzero means there are still TVLs */
-  left = tlv->length;
+  left = TlvLength(tlv);
   end = cur + left;
 
   do {
@@ -162,7 +163,7 @@ static void traverseTvl(Tlv_t *tlv, uint16_t level)
       return;
     }
     traverseTvl(&childTlv, level);
-    cur = childTlv.value + childTlv.length;
+    cur = TlvEnd(&childTlv);
     left = end - cur;
   } while(left);
 }
