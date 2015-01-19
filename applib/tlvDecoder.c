@@ -1,6 +1,6 @@
 #include <assert.h>
 #include <stdio.h>
-#include "tlv.h"
+#include "tlvDecoder.h"
 
 #define TAGCLASS_MASK 0xC0      /* b1100 0000 */
 #define TAGCLASS_SHIFT 6
