@@ -211,7 +211,7 @@ TEST(TLV, SuccessfullySearchTagFromSeveralTVLsOnTheSameLevel)
   LONGS_EQUAL(23, TlvTagNum(&tlv));
 }
 
-IGNORE_TEST(TLV, SuccessfullySearchTagRecursively)
+TEST(TLV, SuccessfullySearchTagRecursively)
 {
   Tlv_t tlv;
 
