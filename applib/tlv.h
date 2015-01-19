@@ -15,7 +15,7 @@
  */
 
 #include <stdbool.h>
-
+#include <stdint.h>
 
 /** Defines values of tag class */
 typedef enum {
