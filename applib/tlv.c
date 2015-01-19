@@ -172,6 +172,7 @@ static bool tagIsMatch(uint16_t tag, Tlv_t *tlv)
 {
   uint16_t tlvTag = 0;
 
+
   //encode tag in tlv
   tlvTag |= TlvTagClass(tlv) << TAGCLASS_SHIFT;
   tlvTag |= TlvIsConstructed(tlv);
@@ -200,7 +201,8 @@ bool TlvSearchTag(const uint8_t *buffer, size_t length, uint16_t tag,
     /* move cur to the end of the tlv object. It points to the
        first unparsed octet' */
     cur = TlvEnd(tlv);
+    left = (size_t)(end - cur);
   }
 
-  return true;
+  return false;
 }

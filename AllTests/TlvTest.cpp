@@ -187,6 +187,13 @@ TEST(TLV, SuccessfullySearchTagFromOneTVL)
   LONGS_EQUAL(16, TlvTagNum(&tlv));
 }
 
+TEST(TLV, SearchNonExistTagReturnFailure)
+{
+  Tlv_t tlv;
+
+  CHECK(!TlvSearchTag(tlv1Data, sizeof(tlv1Data), 0x0071, false, &tlv));
+}
+
 TEST(TLV, SuccessfullySearchTagFromSeveralTVLsOnTheSameLevel)
 {
   Tlv_t tlv;
@@ -202,7 +209,12 @@ TEST(TLV, SuccessfullySearchTagFromSeveralTVLsOnTheSameLevel)
 
   CHECK(TlvSearchTag(children, len, 0x0057, false, &tlv));
   LONGS_EQUAL(23, TlvTagNum(&tlv));
+}
 
-  // CHECK(TlvSearchTag(tlv1Data, sizeof(tlv1Data), 0x0070, false, &tlv));
-  // POINTERS_EQUAL(tlv1Data, TlvPtr(&tlv));
+IGNORE_TEST(TLV, SuccessfullySearchTagRecursively)
+{
+  Tlv_t tlv;
+
+  CHECK(TlvSearchTag(tlv1Data, sizeof(tlv1Data), 0x0057, true, &tlv));
+  LONGS_EQUAL(23, TlvTagNum(&tlv));
 }

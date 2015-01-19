@@ -71,7 +71,7 @@ static inline TagClass_t TlvTagClass(Tlv_t *tlv)
  * @param tlv address of tlv object
  * @return the value of isConstructed field
  */
-static inline bool TlvIsConstructed(Tlv_t *tlv)
+static inline uint8_t TlvIsConstructed(Tlv_t *tlv)
 {
   return tlv->isConstructed;
 }
