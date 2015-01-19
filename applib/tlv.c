@@ -40,7 +40,6 @@
    and cur is moved to next as well */
 #define nextOctet(cur) (*((cur)++))
 
-
 /**
  * parse the tag part of encoding buffer pointed by *pcur
  * @param pcur the pointer of pointer to the current position of the buffer
@@ -159,7 +158,6 @@ bool TlvParse(const uint8_t *buffer, size_t length, Tlv_t *tlv)
   if (!parseValue(&cur, end, tlv)) return false;
   return true;
 }
-
 
 /**
  * Compare the input tag with the tag in the input Tlv
