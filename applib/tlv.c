@@ -122,6 +122,23 @@ static bool parseValue(const uint8_t **pcur, const uint8_t *end, Tlv_t *tlv)
   return true;
 }
 
+/**
+ * Skip all leading zero bytes, that is moving pcur to the first non-zero byte,
+ * Or end of the buffer
+ * @param pcur the pointer of pointer to the current position of the buffer
+ * @param end the pointer to one more than the last octet in the buffer
+ * @return true on success, false if the end of buffer is met
+ */
+static bool skipZeroBytes(const uint8_t **pcur, const uint8_t *end)
+{
+  while (!**pcur && (*pcur < end)) (*pcur)++;
+
+  if (*pcur < end) return true;
+
+  /* the end of the buffer is reached */
+  return false;
+}
+
 bool TlvParse(const uint8_t *buffer, size_t length, Tlv_t *tlv)
 {
   const uint8_t *cur = NULL, *end = NULL;
@@ -131,6 +148,8 @@ bool TlvParse(const uint8_t *buffer, size_t length, Tlv_t *tlv)
   cur = buffer;
   end = buffer + length;
 
+
+  if (!skipZeroBytes(&cur, end)) return false;
   if (!parseTag(&cur, end, tlv)) return false;
   if (!parseLength(&cur, end, tlv)) return false;
   if (!parseValue(&cur, end, tlv)) return false;

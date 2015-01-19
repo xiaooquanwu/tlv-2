@@ -31,7 +31,7 @@ TEST_GROUP(TLV)
 
 TEST(TLV, ParseTagClassBITSuccessfully)
 {
-  uint8_t uni[] = {0x00, 0x00}, pri[] = { 0xC0, 0x00};
+  uint8_t uni[] = {0x01, 0x00}, pri[] = { 0xC0, 0x00};
   Tlv_t tlv;
 
   CHECK(TlvParse(uni, sizeof(uni), &tlv));
@@ -43,7 +43,7 @@ TEST(TLV, ParseTagClassBITSuccessfully)
 
 TEST(TLV, ParsePorCBITSuccessfully)
 {
-  uint8_t primitive[] = {0x00, 0x00}, constructed[] = {0x20, 0x00};
+  uint8_t primitive[] = {0x01, 0x00}, constructed[] = {0x20, 0x00};
   Tlv_t tlv;
 
   CHECK(TlvParse(primitive, sizeof(primitive), &tlv));
@@ -119,6 +119,21 @@ TEST(TLV, ParseValueBITSuccessfully)
   CHECK(!TlvParse(tagNum1NoValuePart, sizeof(tagNum1NoValuePart), &tlv));
 
 }
+
+TEST(TLV, LeadingZeroBytesIsSkippeduccessfully)
+{
+  uint8_t tagNum1Length1[] = {0x00, 0x01, 0x01, 00};
+  uint8_t tagNumError[] = {0x00, 0x00, 0x00};
+
+  Tlv_t tlv;
+
+  CHECK(TlvParse(tagNum1Length1, sizeof(tagNum1Length1), &tlv));
+  LONGS_EQUAL(1, TlvTagNum(&tlv));
+  POINTERS_EQUAL(&tagNum1Length1[3], TlvValue(&tlv));
+
+  CHECK(!TlvParse(tagNumError, sizeof(tagNumError), &tlv));
+}
+
 TEST(TLV, ParseTlv1DataSuccessfully)
 {
   Tlv_t tlv;
