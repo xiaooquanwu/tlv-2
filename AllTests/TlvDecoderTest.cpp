@@ -35,10 +35,10 @@ TEST(TLVDecoder, ParseTagClassBITSuccessfully)
   Tlv_t tlv;
 
   CHECK(TlvParse(uni, sizeof(uni), &tlv));
-  LONGS_EQUAL(TAG_CLASS_UNI, TlvTagClass(&tlv));
+  LONGS_EQUAL(TAG_CLASS_UNI, TagTagClass(&tlv.tag));
 
   CHECK(TlvParse(pri, sizeof(pri), &tlv));
-  LONGS_EQUAL(TAG_CLASS_PRI, TlvTagClass(&tlv));
+  LONGS_EQUAL(TAG_CLASS_PRI, TagTagClass(&tlv.tag));
 }
 
 TEST(TLVDecoder, ParsePorCBITSuccessfully)
@@ -47,10 +47,10 @@ TEST(TLVDecoder, ParsePorCBITSuccessfully)
   Tlv_t tlv;
 
   CHECK(TlvParse(primitive, sizeof(primitive), &tlv));
-  CHECK(!TlvIsConstructed(&tlv));
+  CHECK(!TagIsConstructed(&tlv.tag));
 
   CHECK(TlvParse(constructed, sizeof(constructed), &tlv));
-  CHECK(TlvIsConstructed(&tlv));
+  CHECK(TagIsConstructed(&tlv.tag));
 }
 
 TEST(TLVDecoder, ParseTagNumberBITSuccessfully)
@@ -63,16 +63,16 @@ TEST(TLVDecoder, ParseTagNumberBITSuccessfully)
   Tlv_t tlv;
 
   CHECK(TlvParse(tagNum1, sizeof(tagNum1), &tlv));
-  LONGS_EQUAL(1, TlvTagNum(&tlv));
+  LONGS_EQUAL(1, TagTagNum(&tlv.tag));
 
   CHECK(TlvParse(tagNum30, sizeof(tagNum30), &tlv));
-  LONGS_EQUAL(30, TlvTagNum(&tlv));
+  LONGS_EQUAL(30, TagTagNum(&tlv.tag));
 
   CHECK(TlvParse(tagNum31, sizeof(tagNum31), &tlv));
-  LONGS_EQUAL(31, TlvTagNum(&tlv));
+  LONGS_EQUAL(31, TagTagNum(&tlv.tag));
 
   CHECK(TlvParse(tagNum127, sizeof(tagNum127), &tlv));
-  LONGS_EQUAL(127, TlvTagNum(&tlv));
+  LONGS_EQUAL(127, TagTagNum(&tlv.tag));
 
   CHECK(!TlvParse(tagNumError, sizeof(tagNumError), &tlv));
 }
@@ -128,7 +128,7 @@ TEST(TLVDecoder, LeadingZeroBytesIsSkippeduccessfully)
   Tlv_t tlv;
 
   CHECK(TlvParse(tagNum1Length1, sizeof(tagNum1Length1), &tlv));
-  LONGS_EQUAL(1, TlvTagNum(&tlv));
+  LONGS_EQUAL(1, TagTagNum(&tlv.tag));
   POINTERS_EQUAL(&tagNum1Length1[3], TlvValue(&tlv));
 
   CHECK(!TlvParse(tagNumError, sizeof(tagNumError), &tlv));
@@ -142,11 +142,11 @@ TEST(TLVDecoder, ParseTlv1DataSuccessfully)
   // encoding tlv object in the buffer
   POINTERS_EQUAL(tlv1Data, TlvPtr(&tlv));
   // tag class
-  LONGS_EQUAL(TAG_CLASS_APP, TlvTagClass(&tlv));
+  LONGS_EQUAL(TAG_CLASS_APP, TagTagClass(&tlv.tag));
   // Primitive or constructed
-  CHECK(TlvIsConstructed(&tlv));
+  CHECK(TagIsConstructed(&tlv.tag));
   // tag number
-  LONGS_EQUAL(0x10, TlvTagNum(&tlv));
+  LONGS_EQUAL(0x10, TagTagNum(&tlv.tag));
   // length
   LONGS_EQUAL(0x43, TlvLength(&tlv));
   // value
@@ -158,7 +158,7 @@ TEST(TLVDecoder, SuccessfullySearchTagFromOneTVL)
   Tlv_t tlv;
 
   CHECK(TlvSearchTag(tlv1Data, sizeof(tlv1Data), 0x0070, false, &tlv));
-  LONGS_EQUAL(16, TlvTagNum(&tlv));
+  LONGS_EQUAL(16, TagTagNum(&tlv.tag));
 }
 
 TEST(TLVDecoder, SearchNonExistTagReturnFailure)
@@ -182,13 +182,13 @@ TEST(TLVDecoder, SuccessfullySearchTagFromSeveralTVLsOnTheSameLevel)
   children = tlv.value;
   len = tlv.length;
   CHECK(TlvSearchTag(children, len, 0x205F, false, &tlv));
-  LONGS_EQUAL(32, TlvTagNum(&tlv));
+  LONGS_EQUAL(32, TagTagNum(&tlv.tag));
 
   CHECK(TlvSearchTag(children, len, 0x0057, false, &tlv));
-  LONGS_EQUAL(23, TlvTagNum(&tlv));
+  LONGS_EQUAL(23, TagTagNum(&tlv.tag));
 
   CHECK(TlvSearchTag(children, len, 0x1F9F, true, &tlv));
-  LONGS_EQUAL(31, TlvTagNum(&tlv));
+  LONGS_EQUAL(31, TagTagNum(&tlv.tag));
 }
 
 TEST(TLVDecoder, SuccessfullySearchTagRecursively)
@@ -196,8 +196,8 @@ TEST(TLVDecoder, SuccessfullySearchTagRecursively)
   Tlv_t tlv;
 
   CHECK(TlvSearchTag(tlv1Data, sizeof(tlv1Data), 0x0070, true, &tlv));
-  LONGS_EQUAL(16, TlvTagNum(&tlv));
+  LONGS_EQUAL(16, TagTagNum(&tlv.tag));
 
   CHECK(TlvSearchTag(tlv1Data, sizeof(tlv1Data), 0x0057, true, &tlv));
-  LONGS_EQUAL(23, TlvTagNum(&tlv));
+  LONGS_EQUAL(23, TagTagNum(&tlv.tag));
 }

@@ -6,7 +6,7 @@
 #define TAGCLASS_SHIFT 6
 
 #define ISCONSTRUCTED_MASK 0x20 /* b0010 0000 */
-/* #define ISCONSTRUCTED_SHIFT 5 */
+#define ISCONSTRUCTED_SHIFT 5
 
 #define TAGNUM_B1_MASK 0x1F     /* b0001 1111
                                    tag number bits mask in the first byte */
@@ -25,9 +25,9 @@
 #define SET_U16_HIHALF(u16, u8) (u16 |= u8 << 8)
 
 #define getTagClass(octet) ((octet & TAGCLASS_MASK) >> TAGCLASS_SHIFT)
-/* #define getIsConstructed(octet) ((octet & ISCONSTRUCTED_MASK) >> \ */
-/*                                        ISCONSTRUCTED_SHIFT) */
-#define getIsConstructed(octet) (octet & ISCONSTRUCTED_MASK)
+#define getIsConstructed(octet) ((octet & ISCONSTRUCTED_MASK) >> \
+                                       ISCONSTRUCTED_SHIFT)
+/* #define getIsConstructed(octet) (octet & ISCONSTRUCTED_MASK) */
 #define getTagNumOfB1(octet) (octet & TAGNUM_B1_MASK)
 #define tagNumIsIn1Byte(tagNum) (tagNum < TAGNUM_MULTIBYTES_LEADING)
 #define getTagNumOfB2(octet) (octet & TAGNUM_B2_MASK)
@@ -51,21 +51,26 @@
 static bool parseTag(const uint8_t **pcur, const uint8_t *end, Tlv_t *tlv)
 {
   uint8_t octet;
+  Tag_t tag;
+
   if (*pcur >= end) return false;
 
   tlv->ptr = (uint8_t *)(*pcur);
-
   octet = nextOctet(*pcur);
-  tlv->tagClass = getTagClass(octet);
-  tlv->isConstructed = getIsConstructed(octet);
-  tlv->tagNum = getTagNumOfB1(octet);
-  if (!tagNumIsIn1Byte(tlv->tagNum)) {
+
+  tag.tagClass = getTagClass(octet);
+  tag.isConstructed = getIsConstructed(octet);
+
+  tag.tagNum = getTagNumOfB1(octet);
+  if (!tagNumIsIn1Byte(TagTagNum(&tag))) {
     if (*pcur == end) return false;
     octet = nextOctet(*pcur);
     /* as only max two bytes tag is supported */
     if (isNotLastByteOfTagNum(octet)) return false;
-    tlv->tagNum = getTagNumOfB2(octet);
+    tag.tagNum = getTagNumOfB2(octet);
   }
+
+  tlv->tag = tag;
   return true;
 }
 
@@ -159,29 +164,31 @@ bool TlvParse(const uint8_t *buffer, size_t length, Tlv_t *tlv)
   return true;
 }
 
+static inline uint16_t TagToUint16(Tag_t tag)
+{
+  uint16_t encoded = 0;
+
+  encoded |= TagTagClass(&tag) << TAGCLASS_SHIFT;
+  encoded |= TagIsConstructed(&tag) << ISCONSTRUCTED_SHIFT;
+  if (tagNumIsIn1Byte(TagTagNum(&tag))) {
+    SET_U16_LOWHALF(encoded, TagTagNum(&tag));
+  } else {
+    SET_U16_LOWHALF(encoded, TAGNUM_MULTIBYTES_LEADING);
+    SET_U16_HIHALF(encoded,tagNumSetAsLast(TagTagNum(&tag)));
+  }
+  return encoded;
+}
+
 /**
- * Compare the input tag with the tag in the input Tlv
- * @param tag the input tag, tag should be encoded in a way that
+ * Compare the input encoded tag with the tag object
+ * @param encoded the input encoded tag, it should be encoded in a way that
  * lower octet is the first octet.
- * @param tlv the input tlv object
+ * @param tag the input tag object
  * @return true if tags are the same, otherwise false
  */
-static bool tagIsMatch(uint16_t tag, Tlv_t *tlv)
+static bool TagIsMatch(uint16_t encoded, Tag_t tag)
 {
-  uint16_t tlvTag = 0;
-
-
-  //encode tag in tlv
-  tlvTag |= TlvTagClass(tlv) << TAGCLASS_SHIFT;
-  tlvTag |= TlvIsConstructed(tlv);
-  if (tagNumIsIn1Byte(TlvTagNum(tlv))) {
-    SET_U16_LOWHALF(tlvTag, TlvTagNum(tlv));
-  } else {
-    SET_U16_LOWHALF(tlvTag, TAGNUM_MULTIBYTES_LEADING);
-    SET_U16_HIHALF(tlvTag,tagNumSetAsLast(TlvTagNum(tlv)));
-  }
-  //compare two encoded comparision result
-  return tag == tlvTag;
+  return encoded == TagToUint16(tag);
 }
 
 bool TlvSearchTag(const uint8_t *buffer, size_t length, uint16_t tag,
@@ -193,7 +200,7 @@ bool TlvSearchTag(const uint8_t *buffer, size_t length, uint16_t tag,
 
   while (cur < end) {
     if (!TlvParse(cur, left, tlv)) return false;
-    if (tagIsMatch(tag, tlv)) return true;
+    if (TagIsMatch(tag, tlv->tag)) return true;
 
     /* move cur to the end of the tlv object. It points to the
        first unparsed octet */
@@ -201,7 +208,7 @@ bool TlvSearchTag(const uint8_t *buffer, size_t length, uint16_t tag,
     left = (size_t)(end - cur);
 
     /* search depth first */
-    if (recursive && TlvIsConstructed(tlv)) {
+    if (recursive && TagIsConstructed(&tlv->tag)) {
       if (TlvSearchTag(TlvValue(tlv), TlvLength(tlv),
                       tag, true, tlv)) {
         return true;

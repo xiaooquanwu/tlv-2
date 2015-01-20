@@ -42,7 +42,6 @@ typedef uint8_t TagNum_t;
  * max is 0x7FFF (b1111111 1111111) */
 typedef uint16_t Length_t;
 
-/** type for tlv object */
 typedef struct {
   /** tag class */
   TagClass_t tagClass;
@@ -50,6 +49,12 @@ typedef struct {
   uint8_t isConstructed;
   /** tag number */
   TagNum_t tagNum;
+} Tag_t;
+
+/** type for tlv object */
+typedef struct {
+  /* tag */
+  Tag_t tag;
   /** Length */
   Length_t length;
   /** points to the whole encoded tlv object in the buffer */
@@ -59,33 +64,43 @@ typedef struct {
 } Tlv_t;
 
 /**
- * Getters of tagClass field of tlv object
- * @param tlv address of tlv object
+ * Getters of tagClass field of tag object
+ * @param tag address of tag object
  * @return the value of tag class
  */
-static inline TagClass_t TlvTagClass(Tlv_t *tlv)
+static inline TagClass_t TagTagClass(Tag_t *tag)
 {
-  return tlv->tagClass;
+  return tag->tagClass;
 }
 
 /**
- * Getters of isConstructed field of tlv object
- * @param tlv address of tlv object
+ * Getters of isConstructed field of tag object
+ * @param tag address of tag object
  * @return the value of isConstructed field
  */
-static inline uint8_t TlvIsConstructed(Tlv_t *tlv)
+static inline uint8_t TagIsConstructed(Tag_t *tag)
 {
-  return tlv->isConstructed;
+  return tag->isConstructed;
 }
 
 /**
- * Getters of tagNum field of tlv object
- * @param tlv address of tlv object
+ * Getters of tagNum field of tag object
+ * @param tag address of tag object
  * @return the value of tagNum field
  */
-static inline TagNum_t TlvTagNum(Tlv_t *tlv)
+static inline TagNum_t TagTagNum(Tag_t *tag)
 {
-  return tlv->tagNum;
+  return tag->tagNum;
+}
+
+/**
+ * Getters of tag field of tlv object
+ * @param tlv address of tlv object
+ * @return the value of tag field
+ */
+static inline Tag_t TlvTag(Tlv_t *tlv)
+{
+  return tlv->tag;
 }
 
 /**
