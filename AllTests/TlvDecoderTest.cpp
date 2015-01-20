@@ -17,13 +17,6 @@ const uint8_t tlv1Data[] =  {
   0x30,0x30,0x30,0x30,0x30,0x90,0x00
 };
 
-const uint8_t tlv3Data[] =  {
-  0xFF,0xFF,
-  0x70,0x0E,0x5A,0x08,0x47,0x61,0x73,0x90,
-  0x01,0x01,0x00,0x10,0x5F,0x34,0x01,0x01,
-  0x90,0x00
-};
-
 TEST_GROUP(TLVDecoder)
 {
   void setup()
@@ -158,25 +151,6 @@ TEST(TLVDecoder, ParseTlv1DataSuccessfully)
   LONGS_EQUAL(0x43, TlvLength(&tlv));
   // value
   POINTERS_EQUAL(&tlv1Data[2], TlvValue(&tlv));
-}
-
-IGNORE_TEST(TLVDecoder, ParseTlv3DataHavingInvalidTagSuccessfully)
-{
-  Tlv_t tlv;
-  // parse
-  CHECK(TlvParse(tlv3Data, sizeof(tlv3Data), &tlv));
-  // encoding tlv object in the buffer
-  POINTERS_EQUAL(&tlv1Data[2], TlvPtr(&tlv));
-  // tag class
-  LONGS_EQUAL(TAG_CLASS_APP, TlvTagClass(&tlv));
-  // Primitive or constructed
-  CHECK(TlvIsConstructed(&tlv));
-  // tag number
-  LONGS_EQUAL(0x16, TlvTagNum(&tlv));
-  // length
-  LONGS_EQUAL(14, TlvLength(&tlv));
-  // value
-  POINTERS_EQUAL(&tlv1Data[4], TlvValue(&tlv));
 }
 
 TEST(TLVDecoder, SuccessfullySearchTagFromOneTVL)

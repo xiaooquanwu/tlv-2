@@ -17,7 +17,7 @@ TEST_GROUP(TLVEncoder)
   }
 };
 
-TEST(TLVEncoder, EncoderStartHere)
+IGNORE_TEST(TLVEncoder, EncoderStartHere)
 {
   FAIL("Encoder Start Here")
 }
