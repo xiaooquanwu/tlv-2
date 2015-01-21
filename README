@@ -1,0 +1,30 @@
+Overview
+--------
+Partly TLV implemenation for test
+
+applib/tlvDecode.h
+------------------
+* TlvParse
+* TlvSearchTag
+
+applib/tlvEncode.h
+------------------
+* TlvCreate
+* TlvAdd
+* TlvAddData
+
+applib/txnInfoCoder.h
+---------------------
+* TxnInfo_t_encode for TxnInfo_t encoding
+* TxnInfo_t_decode for TxnInfo_t decoding
+
+cli/examplerParser.c
+--------------------
+example Parser of tlv1Data, tlv2Data, tlv3Data and tlv4Data
+
+Compilation
+-----------
+It depends on cpputest and its makefile template.
+1. set up cpputest according to http://cpputest.github.io
+2. change CPPUTEST_HOME in Makefile
+3. make
