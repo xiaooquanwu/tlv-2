@@ -3,6 +3,17 @@
  *
  * Description: encoder and decoder for TxnInfo_t
  *
+ * The basic idea of these macro is to make the real encoding and decoding
+ * code looks like from one template. It shows the code actually can be
+ * generated automatically
+ *
+ * array needs special treat in
+ * 1. encoding and decoding prototype and macrodeclaring
+ * 2. if the array element is multi bytes width, byte order to networking
+ * should be added too
+ * I'm not going to that far.
+ *
+ *
  */
 
 #ifndef D_txnTypeCoder_H
@@ -84,7 +95,6 @@ extern bool TxnInfo_t_decode(TxnInfo_t *value, Tlv_t *tlv);
 /* the following can be in their own files, put here because
    this is an eample to not distrubte too much files*/
 extern bool TxnRef_encode(const char value[], Tlv_t *tlv);
-/* extern bool TxnRef_encode(const TxnInfo_t *value, Tlv_t *tlv); */
 extern bool Amount_encode(const Amount_Type value, Tlv_t *tlv);
 extern bool TxnType_encode(const TxnType_Type value, Tlv_t *tlv);
 extern bool CurrencyCode_encode(const CurrencyCode_Type value, Tlv_t *tlv);

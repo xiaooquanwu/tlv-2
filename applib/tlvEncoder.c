@@ -5,7 +5,6 @@
  */
 #include "tlvEncoder.h"
 #include <string.h>
-#include <assert.h>
 
 #define LENGTH_MAX_VALUE 255
 #define LENGTH_MAX_BYTES 2
