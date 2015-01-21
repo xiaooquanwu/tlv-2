@@ -59,7 +59,7 @@ TEST(TLVEncoder, CreateTLVContainerSuccessfully)
   LONGS_EQUAL(bufferLen - (TlvValue(&tlv) - TlvPtr(&tlv)),
               TlvDataCapacity(&tlv));
   LONGS_EQUAL(TAG_CLASS_APP, TagTagClass(&tlv.tag));
-  CHECK(TagIsConstructed(&tlv.tag));
+  CHECK(TagIsPorC(&tlv.tag));
   LONGS_EQUAL(0x10, TagTagNum(&tlv.tag));
   LONGS_EQUAL(0, TlvDataLen(&tlv));
   POINTERS_EQUAL(&buffer[3], TlvValue(&tlv));

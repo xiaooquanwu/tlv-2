@@ -22,7 +22,7 @@
 #define TAGNUM_b8 0x80       /* bit 8 in a byte */
 
 #define getTagClass(octet) ((octet & TAGCLASS_MASK) >> TAGCLASS_SHIFT)
-#define getIsConstructed(octet) ((octet & ISCONSTRUCTED_MASK) >> \
+#define getIsPorC(octet) ((octet & ISCONSTRUCTED_MASK) >> \
                                        ISCONSTRUCTED_SHIFT)
 #define getTagNumOfB1(octet) (octet & TAGNUM_B1_MASK)
 #define tagNumIsIn1Byte(tagNum) (tagNum < TAGNUM_MULTIBYTES_LEADING)
@@ -56,7 +56,7 @@ typedef struct {
   /** tag class */
   TagClass_t tagClass;
   /** b6 is 0 on primitive, 1 on constructed */
-  uint8_t isConstructed;
+  PorC_t isPorC;
   /** tag number */
   TagNum_t tagNum;
 } Tag_t;
@@ -72,13 +72,13 @@ static inline TagClass_t TagTagClass(Tag_t *tag)
 }
 
 /**
- * Getters of isConstructed field of tag object
+ * Getters of isPorC field of tag object
  * @param tag address of tag object
- * @return the value of isConstructed field
+ * @return the value of isPorC field
  */
-static inline uint8_t TagIsConstructed(Tag_t *tag)
+static inline uint8_t TagIsPorC(Tag_t *tag)
 {
-  return tag->isConstructed;
+  return tag->isPorC;
 }
 
 /**
@@ -98,6 +98,17 @@ static inline TagNum_t TagTagNum(Tag_t *tag)
  * only one octet is needed
  */
 extern uint16_t TagToUint16(Tag_t tag);
+
+/**
+ * Encode tag fields to uint16_t in Big Endian as it is sent to receiver
+ * @param tagClass The tag class
+ * @param isPorC Primitive or constructed
+ * @param tagNum The tag number
+ * @return the encoded tag in uint16_t, the lowest octet is 0 if
+ * only one octet is needed
+ */
+extern uint16_t TagFieldsToUint16(TagClass_t tagClass,
+                                  PorC_t isPorC, TagNum_t tagNum);
 
 /**
  * Decode tag from uint16_t in Big Endian to Tag_t

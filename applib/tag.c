@@ -1,19 +1,25 @@
 #include "tag.h"
 
-uint16_t TagToUint16(Tag_t tag)
+uint16_t TagFieldsToUint16(TagClass_t tagClass,
+                           PorC_t isPorC, TagNum_t tagNum)
 {
   uint16_t encoded = 0;
   uint8_t *octet = (uint8_t *)&encoded;
 
-  octet[1] |= TagTagClass(&tag) << TAGCLASS_SHIFT;
-  octet[1] |= TagIsConstructed(&tag) << ISCONSTRUCTED_SHIFT;
-  if (tagNumIsIn1Byte(TagTagNum(&tag))) {
-    octet[1] |= TagTagNum(&tag);
+  octet[1] |= tagClass << TAGCLASS_SHIFT;
+  octet[1] |= isPorC << ISCONSTRUCTED_SHIFT;
+  if (tagNumIsIn1Byte(tagNum)) {
+    octet[1] |= tagNum;
   } else {
     octet[1] |= TAGNUM_MULTIBYTES_LEADING;
-    octet[0] |= tagNumSetAsLast(TagTagNum(&tag));
+    octet[0] |= tagNumSetAsLast(tagNum);
   }
   return encoded;
+}
+
+uint16_t TagToUint16(Tag_t tag)
+{
+  return TagFieldsToUint16(tag.tagClass, tag.isPorC, tag.tagNum);
 }
 
 Tag_t TagFromUint16(uint16_t tag)
@@ -23,7 +29,7 @@ Tag_t TagFromUint16(uint16_t tag)
   uint8_t *octet = (uint8_t *)&tag;
 
   tlvTag.tagClass = getTagClass(octet[1]);
-  tlvTag.isConstructed = getIsConstructed(octet[1]);
+  tlvTag.isPorC = getIsPorC(octet[1]);
 
   tlvTag.tagNum = getTagNumOfB1(octet[1]);
   if (!tagNumIsIn1Byte(TagTagNum(&tlvTag))) {

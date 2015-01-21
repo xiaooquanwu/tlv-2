@@ -29,7 +29,7 @@ static bool parseTag(const uint8_t **pcur, const uint8_t *end, Tlv_t *tlv)
   octet = nextOctet(*pcur);
 
   tag.tagClass = getTagClass(octet);
-  tag.isConstructed = getIsConstructed(octet);
+  tag.isPorC = getIsPorC(octet);
 
   tag.tagNum = getTagNumOfB1(octet);
   if (!tagNumIsIn1Byte(TagTagNum(&tag))) {
@@ -145,7 +145,7 @@ bool TlvSearchTag(const uint8_t *buffer, size_t length, uint16_t tag,
     left = (size_t)(end - cur);
 
     /* search depth first */
-    if (recursive && TagIsConstructed(&tlv->tag)) {
+    if (recursive && TagIsPorC(&tlv->tag)) {
       if (TlvSearchTag(TlvValue(tlv), TlvDataLen(tlv),
                       tag, true, tlv)) {
         return true;

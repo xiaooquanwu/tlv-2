@@ -18,6 +18,7 @@ CPPUTEST_USE_EXTENSIONS = Y
 CPP_PLATFORM = Gcc
 #disable this warning because cpputest use old style cast
 CPPUTEST_CXXFLAGS += -Wno-old-style-cast
+CPPUTEST_CFLAGS += -std=c99
 
 SRC_DIRS = \
 	applib

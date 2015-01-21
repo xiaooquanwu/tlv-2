@@ -47,10 +47,10 @@ TEST(TLVDecoder, ParsePorCBITSuccessfully)
   Tlv_t tlv;
 
   CHECK(TlvParse(primitive, sizeof(primitive), &tlv));
-  CHECK(!TagIsConstructed(&tlv.tag));
+  CHECK(!TagIsPorC(&tlv.tag));
 
   CHECK(TlvParse(constructed, sizeof(constructed), &tlv));
-  CHECK(TagIsConstructed(&tlv.tag));
+  CHECK(TagIsPorC(&tlv.tag));
 }
 
 TEST(TLVDecoder, ParseTagNumberBITSuccessfully)
@@ -152,7 +152,7 @@ TEST(TLVDecoder, ParseTlv1DataSuccessfully)
   // tag class
   LONGS_EQUAL(TAG_CLASS_APP, TagTagClass(&tlv.tag));
   // Primitive or constructed
-  CHECK(TagIsConstructed(&tlv.tag));
+  CHECK(TagIsPorC(&tlv.tag));
   // tag number
   LONGS_EQUAL(0x10, TagTagNum(&tlv.tag));
   // length
