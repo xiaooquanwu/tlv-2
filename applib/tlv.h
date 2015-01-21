@@ -26,6 +26,18 @@
  * max is 0x255 (b10000001 1111111) */
 typedef uint8_t Length_t;
 
+#define LENGTH_MAX_VALUE 255
+#define LENGTH_MAX_BYTES 2
+/* 0x80 means see the sequent bytes, 0x01 means 1 sequent byte */
+#define LENGTH_B1_LEADING (0x80 | 0x01)
+#define LENGTH_MASK 0x7F        /* b0111 1111 */
+#define LENGTH_FMT_MASK 0x80        /* b1000 0000 */
+
+#define getLength(octet) (octet & LENGTH_MASK)
+#define lengthIsShortFmt(octet) (!(octet & LENGTH_FMT_MASK))
+
+
+
 /** type for tlv object */
 typedef struct {
   /* tag */

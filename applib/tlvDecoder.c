@@ -1,11 +1,5 @@
 #include "tlvDecoder.h"
 
-#define LENGTH_MASK 0x7F        /* b0111 1111 */
-#define LENGTH_FMT_MASK 0x80        /* b1000 0000 */
-
-#define getLength(octet) (octet & LENGTH_MASK)
-#define lengthIsShortFmt(octet) (!(octet & LENGTH_FMT_MASK))
-
 /* cur is uint8 *, the value of octet that cur points to is returned
    and cur is moved to next as well */
 #define nextOctet(cur) (*((cur)++))

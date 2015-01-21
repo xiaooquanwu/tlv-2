@@ -6,11 +6,6 @@
 #include "tlvEncoder.h"
 #include <string.h>
 
-#define LENGTH_MAX_VALUE 255
-#define LENGTH_MAX_BYTES 2
-/* 0x80 means see the sequent bytes, 0x01 means 1 sequent byte */
-#define LENGTH_B1_LEADING (0x80 | 0x01)
-
 static bool writeTag(uint16_t tag, uint8_t **pcur, uint8_t *end)
 {
   uint8_t *ptag = (uint8_t *)&tag;
