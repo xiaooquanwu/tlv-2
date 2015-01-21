@@ -28,6 +28,14 @@
 #define Amount_HToNE(x) ((Amount_Type)htonl((uint32_t)x))
 #define Amount_NEToH(x) ((Amount_Type)ntohl((uint32_t)x))
 
+#define TxnType_tagClass TAG_CLASS_APP
+#define TxnType_tagNum 4
+#define TxnType_isPorC IS_PRIM
+#define TxnType_Type uint8_t
+#define TxnType_Size sizeof(TxnType_Type)
+#define TxnType_HToNE(x) (x)
+#define TxnType_NEToH(x) (x)
+
 #define MAX_TXN_REF_LEN 20
 
 typedef struct
@@ -68,9 +76,11 @@ extern bool TxnInfo_t_decode(TxnInfo_t *value, Tlv_t *tlv);
    this is an eample to not distrubte too much files*/
 extern bool TxnRef_encode(const char value[], Tlv_t *tlv);
 /* extern bool TxnRef_encode(const TxnInfo_t *value, Tlv_t *tlv); */
-extern bool Amount_encode(const int32_t value, Tlv_t *tlv);
+extern bool Amount_encode(const Amount_Type value, Tlv_t *tlv);
+extern bool TxnType_encode(const TxnType_Type value, Tlv_t *tlv);
 
 extern bool TxnRef_decode(char value[], Tlv_t *tlv);
-extern bool Amount_decode(int32_t *value, Tlv_t *tlv);
+extern bool Amount_decode(Amount_Type *value, Tlv_t *tlv);
+extern bool TxnType_decode(TxnType_Type *value, Tlv_t *tlv);
 
 #endif

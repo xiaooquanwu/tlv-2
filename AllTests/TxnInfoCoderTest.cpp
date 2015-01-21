@@ -19,17 +19,6 @@ TEST_GROUP(TxnInfoCoder)
   }
 };
 
-// We are going to encoding the following Data,
-// The tags are defined by ourselves
-//
-// typedef struct
-// {
-//   char TxnRef[MAX_TXN_REF_LEN+1]; // Zero terminated string
-//   int32_t amount;
-//   uint8_t txnType;
-//   uint16_t currencyCode;
-// } TxnInfo_t;
-
 TEST(TxnInfoCoder, StartHere)
 {
   uint8_t buffer[TxnInfo_t_size];
@@ -39,6 +28,7 @@ TEST(TxnInfoCoder, StartHere)
   // encoding
   strcpy(value.txnRef, "abc");
   value.amount = 22;
+  value.txnType = 253;
   CHECK(TxnInfo_t_encode(buffer, TxnInfo_t_size, &value, &tlv));
 
   // decoding
@@ -49,5 +39,5 @@ TEST(TxnInfoCoder, StartHere)
   CHECK(TxnInfo_t_decode(&parsedValue, &parsedTlv));
   STRCMP_EQUAL("abc", parsedValue.txnRef);
   LONGS_EQUAL(value.amount, parsedValue.amount);
-
+  LONGS_EQUAL(value.txnType, parsedValue.txnType);
 }

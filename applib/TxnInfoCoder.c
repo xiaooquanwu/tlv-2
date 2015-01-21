@@ -15,14 +15,25 @@ bool TxnRef_encode(const char value[], Tlv_t *tlv)
   return true;
 }
 
-bool Amount_encode(const int32_t value, Tlv_t *tlv)
+bool Amount_encode(const Amount_Type value, Tlv_t *tlv)
 {
   uint16_t tag;
   tag = TagFieldsToUint16(Amount_tagClass, Amount_isPorC, Amount_tagNum);
-  Amount_Type amount = Amount_HToNE(value);
+  Amount_Type data = Amount_HToNE(value);
   if (!TlvAddData(tlv, tag,
-                  (uint8_t *)&amount,
+                  (uint8_t *)&data,
                   Amount_Size)) return false;
+  return true;
+}
+
+bool TxnType_encode(const TxnType_Type value, Tlv_t *tlv)
+{
+  uint16_t tag;
+  tag = TagFieldsToUint16(TxnType_tagClass, TxnType_isPorC, TxnType_tagNum);
+  TxnType_Type data = TxnType_HToNE(value);
+  if (!TlvAddData(tlv, tag,
+                  (uint8_t *)&data,
+                  TxnType_Size)) return false;
   return true;
 }
 
@@ -36,6 +47,7 @@ bool TxnInfo_t_encode(uint8_t *buffer, size_t length,
 
   if (!TxnRef_encode(value->txnRef, tlv)) return false;
   if (!Amount_encode(value->amount, tlv)) return false;
+  if (!TxnType_encode(value->txnType, tlv)) return false;
 
   return true;
 }
@@ -53,7 +65,7 @@ bool TxnRef_decode(char value[], Tlv_t *tlv)
   return true;
 }
 
-bool Amount_decode(int32_t *value, Tlv_t *tlv)
+bool Amount_decode(Amount_Type *value, Tlv_t *tlv)
 {
   Tlv_t child;
   uint16_t tag;
@@ -62,9 +74,25 @@ bool Amount_decode(int32_t *value, Tlv_t *tlv)
   if (!TlvSearchTag(TlvValue(tlv),
                     TlvDataLen(tlv),
                     tag, true, &child)) return false;
-  Amount_Type amount;
-  memcpy(&amount, TlvValue(&child), Amount_Size);
-  *value = Amount_NEToH(amount);
+  Amount_Type data;
+  memcpy(&data, TlvValue(&child), Amount_Size);
+  *value = Amount_NEToH(data);
+
+  return true;
+}
+
+bool TxnType_decode(TxnType_Type *value, Tlv_t *tlv)
+{
+  Tlv_t child;
+  uint16_t tag;
+
+  tag = TagFieldsToUint16(TxnType_tagClass, TxnType_isPorC, TxnType_tagNum);
+  if (!TlvSearchTag(TlvValue(tlv),
+                    TlvDataLen(tlv),
+                    tag, true, &child)) return false;
+  TxnType_Type data;
+  memcpy(&data, TlvValue(&child), TxnType_Size);
+  *value = TxnType_NEToH(data);
 
   return true;
 }
@@ -75,6 +103,7 @@ bool TxnInfo_t_decode(TxnInfo_t *value, Tlv_t *tlv)
 
   if (!TxnRef_decode(value->txnRef, tlv)) return false;
   if (!Amount_decode(&value->amount, tlv)) return false;
+  if (!TxnType_decode(&value->txnType, tlv)) return false;
 
   return true;
 }
