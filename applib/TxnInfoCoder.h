@@ -36,6 +36,15 @@
 #define TxnType_HToNE(x) (x)
 #define TxnType_NEToH(x) (x)
 
+#define CurrencyCode_tagClass TAG_CLASS_APP
+#define CurrencyCode_tagNum 5
+#define CurrencyCode_isPorC IS_PRIM
+#define CurrencyCode_Type uint16_t
+#define CurrencyCode_Size sizeof(CurrencyCode_Type)
+#define CurrencyCode_HToNE(x) ((CurrencyCode_Type)htons((uint16_t)x))
+#define CurrencyCode_NEToH(x) ((CurrencyCode_Type)ntohs((uint16_t)x))
+
+
 #define MAX_TXN_REF_LEN 20
 
 typedef struct
@@ -78,9 +87,11 @@ extern bool TxnRef_encode(const char value[], Tlv_t *tlv);
 /* extern bool TxnRef_encode(const TxnInfo_t *value, Tlv_t *tlv); */
 extern bool Amount_encode(const Amount_Type value, Tlv_t *tlv);
 extern bool TxnType_encode(const TxnType_Type value, Tlv_t *tlv);
+extern bool CurrencyCode_encode(const CurrencyCode_Type value, Tlv_t *tlv);
 
 extern bool TxnRef_decode(char value[], Tlv_t *tlv);
 extern bool Amount_decode(Amount_Type *value, Tlv_t *tlv);
 extern bool TxnType_decode(TxnType_Type *value, Tlv_t *tlv);
+extern bool CurrencyCode_decode(CurrencyCode_Type *value, Tlv_t *tlv);
 
 #endif

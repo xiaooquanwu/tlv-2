@@ -37,6 +37,18 @@ bool TxnType_encode(const TxnType_Type value, Tlv_t *tlv)
   return true;
 }
 
+bool CurrencyCode_encode(const CurrencyCode_Type value, Tlv_t *tlv)
+{
+  uint16_t tag;
+  tag = TagFieldsToUint16(CurrencyCode_tagClass,
+                          CurrencyCode_isPorC, CurrencyCode_tagNum);
+  CurrencyCode_Type data = CurrencyCode_HToNE(value);
+  if (!TlvAddData(tlv, tag,
+                  (uint8_t *)&data,
+                  CurrencyCode_Size)) return false;
+  return true;
+}
+
 bool TxnInfo_t_encode(uint8_t *buffer, size_t length,
                        const TxnInfo_t *value, Tlv_t *tlv)
 {
@@ -48,6 +60,7 @@ bool TxnInfo_t_encode(uint8_t *buffer, size_t length,
   if (!TxnRef_encode(value->txnRef, tlv)) return false;
   if (!Amount_encode(value->amount, tlv)) return false;
   if (!TxnType_encode(value->txnType, tlv)) return false;
+  if (!CurrencyCode_encode(value->currencyCode, tlv)) return false;
 
   return true;
 }
@@ -97,6 +110,22 @@ bool TxnType_decode(TxnType_Type *value, Tlv_t *tlv)
   return true;
 }
 
+bool CurrencyCode_decode(CurrencyCode_Type *value, Tlv_t *tlv)
+{
+  Tlv_t child;
+  uint16_t tag;
+
+  tag = TagFieldsToUint16(CurrencyCode_tagClass, CurrencyCode_isPorC, CurrencyCode_tagNum);
+  if (!TlvSearchTag(TlvValue(tlv),
+                    TlvDataLen(tlv),
+                    tag, true, &child)) return false;
+  CurrencyCode_Type data;
+  memcpy(&data, TlvValue(&child), CurrencyCode_Size);
+  *value = CurrencyCode_NEToH(data);
+
+  return true;
+}
+
 bool TxnInfo_t_decode(TxnInfo_t *value, Tlv_t *tlv)
 {
   memset(value, 0, sizeof(*value));
@@ -104,6 +133,7 @@ bool TxnInfo_t_decode(TxnInfo_t *value, Tlv_t *tlv)
   if (!TxnRef_decode(value->txnRef, tlv)) return false;
   if (!Amount_decode(&value->amount, tlv)) return false;
   if (!TxnType_decode(&value->txnType, tlv)) return false;
+  if (!CurrencyCode_decode(&value->currencyCode, tlv)) return false;
 
   return true;
 }

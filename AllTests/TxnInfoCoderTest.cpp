@@ -29,15 +29,20 @@ TEST(TxnInfoCoder, StartHere)
   strcpy(value.txnRef, "abc");
   value.amount = 22;
   value.txnType = 253;
+  value.currencyCode = 0x1576;
   CHECK(TxnInfo_t_encode(buffer, TxnInfo_t_size, &value, &tlv));
 
   // decoding
   CHECK(TlvParse(buffer, TxnInfo_t_size, &parsedTlv));
+
   LONGS_EQUAL(TxnInfo_tagClass, TagTagClass(&parsedTlv.tag));
   LONGS_EQUAL(TxnInfo_isPorC, TagIsPorC(&parsedTlv.tag));
   LONGS_EQUAL(TxnInfo_tagNum, TagTagNum(&parsedTlv.tag));
+
   CHECK(TxnInfo_t_decode(&parsedValue, &parsedTlv));
+
   STRCMP_EQUAL("abc", parsedValue.txnRef);
   LONGS_EQUAL(value.amount, parsedValue.amount);
   LONGS_EQUAL(value.txnType, parsedValue.txnType);
+  LONGS_EQUAL(value.currencyCode, parsedValue.currencyCode);
 }
