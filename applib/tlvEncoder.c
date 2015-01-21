@@ -83,8 +83,20 @@ bool TlvAddData(Tlv_t* tlv, uint16_t tag,
   memcpy(TlvValue(&childTlv), value, valueLen);
 
   /* update length */
-  addTlvContainerLength((Length_t)valueLen, &childTlv);
-  addTlvContainerLength((Length_t)TlvTotalLen(&childTlv), tlv);
+  if(!addTlvContainerLength((Length_t)valueLen, &childTlv)) return false;
+  if(!addTlvContainerLength((Length_t)TlvTotalLen(&childTlv), tlv))
+    return false;
 
+  return true;
+}
+
+extern bool TlvAdd(Tlv_t* tlv, const Tlv_t* childTlv)
+{
+  size_t spaceLeft = TlvDataCapacity(tlv) - TlvDataLen(tlv);
+  Length_t childTotalLen = TlvTotalLen(childTlv);
+  if (spaceLeft < childTotalLen) return false;
+
+  memcpy(TlvEnd(tlv), TlvPtr(childTlv), childTotalLen);
+  if (!addTlvContainerLength((Length_t)childTotalLen, tlv)) return false;
   return true;
 }

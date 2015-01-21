@@ -110,3 +110,24 @@ TEST(TLVEncoder, AddDataToTLVContainerSuccessfully)
   BYTES_EQUAL(expected[1], buffer[1]);
   BYTES_EQUAL(expected[2], buffer[2]);
 }
+
+TEST(TLVEncoder, AddTLVObjectToTLVContainerSuccessfully)
+{
+  Tlv_t container, child;
+  const size_t bufferLen = 50;
+  uint8_t buffer1[bufferLen];
+  uint8_t buffer2[bufferLen];
+  uint8_t data = 0x18;
+  uint8_t expected[]={0x70,0x81,0x07, // container tag length
+                      0x71,0x81,0x04,
+                      0x72,0x81,0x01,0x18}; // child
+
+  CHECK(TlvCreate(&container, 0x7000, buffer1, bufferLen));
+  // 1. create child tlv object
+  CHECK(TlvCreate(&child, 0x7100, buffer2, bufferLen));
+  CHECK(TlvAddData(&child, 0x7200, &data, sizeof(data)));
+  // 2. add child tlv object to container
+  CHECK(TlvAdd(&container, &child));
+  for (unsigned int i = 0; i < sizeof(expected); i++)
+    BYTES_EQUAL(expected[i], buffer1[i]);
+}

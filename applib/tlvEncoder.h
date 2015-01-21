@@ -23,7 +23,6 @@
 extern bool TlvCreate(Tlv_t* tlv, uint16_t tag,
                       uint8_t* buffer, size_t length);
 
-
 /**
  * Add TLV data to a TLV container
  * @param tlv [IN]Pointer to a TLV container
@@ -36,5 +35,15 @@ extern bool TlvAddData(Tlv_t* tlv, uint16_t tag,
                 const uint8_t* value, size_t valueLen);
 
 
+/**
+ * Add a TLV object to a TLV container
+ * @param tlv [IN]Pointer to a TLV container
+ * @param childTlv [IN]Pointer to a TLV object
+ * @return true on success, false on failure
+ * @note The TLV container and the TLV object shouldn't
+ * overlap in the buffer since memory copied from child
+ * TLV object's' buffer to the TLV container's buffer
+ */
+extern bool TlvAdd(Tlv_t* tlv, const Tlv_t* childTlv);
 
 #endif

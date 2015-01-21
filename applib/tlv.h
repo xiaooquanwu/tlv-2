@@ -45,7 +45,7 @@ typedef struct {
  * @param tlv address of tlv object
  * @return the value of tag field
  */
-static inline Tag_t TlvTag(Tlv_t *tlv)
+static inline Tag_t TlvTag(const Tlv_t *tlv)
 {
   return tlv->tag;
 }
@@ -55,7 +55,7 @@ static inline Tag_t TlvTag(Tlv_t *tlv)
  * @param tlv address of tlv object
  * @return the value of the field
  */
-static inline Length_t TlvDataLen(Tlv_t *tlv)
+static inline Length_t TlvDataLen(const Tlv_t *tlv)
 {
   return tlv->dataLen;
 }
@@ -65,7 +65,7 @@ static inline Length_t TlvDataLen(Tlv_t *tlv)
  * @param tlv address of tlv object
  * @return the value of ptr field
  */
-static inline uint8_t* TlvPtr(Tlv_t *tlv)
+static inline uint8_t* TlvPtr(const Tlv_t *tlv)
 {
   return tlv->ptr;
 }
@@ -75,7 +75,7 @@ static inline uint8_t* TlvPtr(Tlv_t *tlv)
  * @param tlv address of tlv object
  * @return the value of the field
  */
-static inline uint8_t* TlvValue(Tlv_t *tlv)
+static inline uint8_t* TlvValue(const Tlv_t *tlv)
 {
   return tlv->value;
 }
@@ -85,7 +85,7 @@ static inline uint8_t* TlvValue(Tlv_t *tlv)
  * @param tlv address of tlv object
  * @return the value of the field
  */
-static inline size_t TlvDataCapacity(Tlv_t *tlv)
+static inline size_t TlvDataCapacity(const Tlv_t *tlv)
 {
   return tlv->dataCapacity;
 }
@@ -95,7 +95,7 @@ static inline size_t TlvDataCapacity(Tlv_t *tlv)
  * @param tlv address of tlv object
  * @return the end address of of the encoded TLV object in the buffer
  */
-static inline uint8_t* TlvEnd(Tlv_t *tlv)
+static inline uint8_t* TlvEnd(const Tlv_t *tlv)
 {
   return TlvValue(tlv) + TlvDataLen(tlv);
 }
@@ -105,9 +105,9 @@ static inline uint8_t* TlvEnd(Tlv_t *tlv)
  * @param tlv address of tlv object
  * @return the total length of all encoded TLV object in the buffer
  */
-static inline size_t TlvTotalLen(Tlv_t *tlv)
+static inline Length_t TlvTotalLen(const Tlv_t *tlv)
 {
-  return (size_t)(TlvValue(tlv) - TlvPtr(tlv)) + TlvDataLen(tlv);
+  return (Length_t)(TlvValue(tlv) - TlvPtr(tlv)) + TlvDataLen(tlv);
 }
 
 #endif
