@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include "tlvDecoder.h"
+#include "tag.h"
 
 uint8_t tlv1Data[] =  {
   0x70,0x43,0x5F,0x20,0x1A,0x56,0x49,0x53,
@@ -120,13 +121,15 @@ static void printData(uint8_t data[], Length_t len, uint16_t level)
 
 static void printTlv(Tlv_t *tlv, uint16_t level)
 {
-  printTagClass(TlvTagClass(tlv), level);
-  printTagNum(TlvTagNum(tlv), level);
-  printLength(TlvLength(tlv), level);
-  printIsConstructed(TlvIsConstructed(tlv), level);
+  Tag_t *tag = &tlv->tag;
+
+  printTagClass(TagTagClass(tag), level);
+  printTagNum(TagTagNum(tag), level);
+  printLength(TlvDataLen(tlv), level);
+  printIsConstructed(TagIsPorC(tag), level);
 
   /* Print data value if it's primitive */
-  if (!TlvIsConstructed(tlv)) {
+  if (!TagIsPorC(tag)) {
     printf("\n");
     return;
   }
@@ -146,7 +149,7 @@ static void traverseTvl(Tlv_t *tlv, uint16_t level)
 
   printTlv(tlv, level);
 
-  if (!TlvIsConstructed(tlv)) {
+  if (!TagIsPorC(&tlv->tag)) {
     return;
   }
   /* one more depth */
@@ -154,7 +157,7 @@ static void traverseTvl(Tlv_t *tlv, uint16_t level)
 
   cur = TlvValue(tlv);
   /* the left octets unhandled in the TLV. Nonzero means there are still TVLs */
-  left = TlvLength(tlv);
+  left = TlvDataLen(tlv);
   end = cur + left;
 
   do {
