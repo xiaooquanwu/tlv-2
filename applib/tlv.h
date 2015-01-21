@@ -18,80 +18,27 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-
-/** Defines values of tag class */
-typedef enum {
-  /** universal class */
-  TAG_CLASS_UNI = 0,
-  /** application class */
-  TAG_CLASS_APP = 1,
-  /** context specific class */
-  TAG_CLASS_CON = 2,
-  /** private class */
-  TAG_CLASS_PRI = 3
-} TagClass_t;
-
-
-/** type for tag number
- * Note: Only support 2 bytes tag, so 1 bytes tag num is enough as the
- * max is 127 */
-typedef uint8_t TagNum_t;
+#include <stddef.h>
+#include "tag.h"
 
 /** type for length
  * Note: at most 2 bytes for length encoding is support,
- * max is 0x7FFF (b1111111 1111111) */
-typedef uint16_t Length_t;
-
-typedef struct {
-  /** tag class */
-  TagClass_t tagClass;
-  /** b6 is 0 on primitive, 1 on constructed */
-  uint8_t isConstructed;
-  /** tag number */
-  TagNum_t tagNum;
-} Tag_t;
+ * max is 0x255 (b10000001 1111111) */
+typedef uint8_t Length_t;
 
 /** type for tlv object */
 typedef struct {
   /* tag */
   Tag_t tag;
-  /** Length */
-  Length_t length;
+  /** Data Length */
+  Length_t dataLen;
   /** points to the whole encoded tlv object in the buffer */
   uint8_t *ptr;
   /** points to the value part of the encoded tlv object in the buffer */
   uint8_t *value;
+  /** the space of buffer allowed for data in Tlv encoding */
+  size_t dataCapacity;
 } Tlv_t;
-
-/**
- * Getters of tagClass field of tag object
- * @param tag address of tag object
- * @return the value of tag class
- */
-static inline TagClass_t TagTagClass(Tag_t *tag)
-{
-  return tag->tagClass;
-}
-
-/**
- * Getters of isConstructed field of tag object
- * @param tag address of tag object
- * @return the value of isConstructed field
- */
-static inline uint8_t TagIsConstructed(Tag_t *tag)
-{
-  return tag->isConstructed;
-}
-
-/**
- * Getters of tagNum field of tag object
- * @param tag address of tag object
- * @return the value of tagNum field
- */
-static inline TagNum_t TagTagNum(Tag_t *tag)
-{
-  return tag->tagNum;
-}
 
 /**
  * Getters of tag field of tlv object
@@ -104,13 +51,13 @@ static inline Tag_t TlvTag(Tlv_t *tlv)
 }
 
 /**
- * Getters of len field of tlv object
+ * Getters of data length field of tlv object
  * @param tlv address of tlv object
- * @return the value of length field
+ * @return the value of the field
  */
-static inline Length_t TlvLength(Tlv_t *tlv)
+static inline Length_t TlvDataLen(Tlv_t *tlv)
 {
-  return tlv->length;
+  return tlv->dataLen;
 }
 
 /**
@@ -126,11 +73,21 @@ static inline uint8_t* TlvPtr(Tlv_t *tlv)
 /**
  * Getters of value field of tlv object
  * @param tlv address of tlv object
- * @return the value of value field
+ * @return the value of the field
  */
 static inline uint8_t* TlvValue(Tlv_t *tlv)
 {
   return tlv->value;
+}
+
+/**
+ * Getters of dataCapacity field of tlv object
+ * @param tlv address of tlv object
+ * @return the value of the field
+ */
+static inline size_t TlvDataCapacity(Tlv_t *tlv)
+{
+  return tlv->dataCapacity;
 }
 
 /**
@@ -140,7 +97,17 @@ static inline uint8_t* TlvValue(Tlv_t *tlv)
  */
 static inline uint8_t* TlvEnd(Tlv_t *tlv)
 {
-  return TlvValue(tlv) + TlvLength(tlv);
+  return TlvValue(tlv) + TlvDataLen(tlv);
+}
+
+/**
+ * Helper of tlv object.
+ * @param tlv address of tlv object
+ * @return the total length of all encoded TLV object in the buffer
+ */
+static inline size_t TlvTotalLen(Tlv_t *tlv)
+{
+  return (size_t)(TlvValue(tlv) - TlvPtr(tlv)) + TlvDataLen(tlv);
 }
 
 #endif

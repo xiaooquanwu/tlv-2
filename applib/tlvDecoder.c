@@ -1,38 +1,8 @@
-#include <assert.h>
-#include <stdio.h>
 #include "tlvDecoder.h"
-
-#define TAGCLASS_MASK 0xC0      /* b1100 0000 */
-#define TAGCLASS_SHIFT 6
-
-#define ISCONSTRUCTED_MASK 0x20 /* b0010 0000 */
-#define ISCONSTRUCTED_SHIFT 5
-
-#define TAGNUM_B1_MASK 0x1F     /* b0001 1111
-                                   tag number bits mask in the first byte */
-#define TAGNUM_MULTIBYTES_LEADING 0x1F   /* b11111 in the leading bytes if
-                                            tag number is more than one byte */
-#define TAGNUM_B2_MASK 0x7F     /* b0111 1111 */
-#define TAGNUM_b8 0x80       /* bit 8 in a byte */
 
 #define LENGTH_MASK 0x7F        /* b0111 1111 */
 #define LENGTH_FMT_MASK 0x80        /* b1000 0000 */
-#define LENGTH_LONGFMT_MINBYTES 1
-#define LENGTH_LONGFMT_MAXBYTES 2
-#define LENGTH_LONGFMT_BITS 8   /* 8 bits are used for forming a length value */
 
-#define SET_U16_LOWHALF(u16, u8) (u16 |= u8)
-#define SET_U16_HIHALF(u16, u8) (u16 |= u8 << 8)
-
-#define getTagClass(octet) ((octet & TAGCLASS_MASK) >> TAGCLASS_SHIFT)
-#define getIsConstructed(octet) ((octet & ISCONSTRUCTED_MASK) >> \
-                                       ISCONSTRUCTED_SHIFT)
-/* #define getIsConstructed(octet) (octet & ISCONSTRUCTED_MASK) */
-#define getTagNumOfB1(octet) (octet & TAGNUM_B1_MASK)
-#define tagNumIsIn1Byte(tagNum) (tagNum < TAGNUM_MULTIBYTES_LEADING)
-#define getTagNumOfB2(octet) (octet & TAGNUM_B2_MASK)
-#define isNotLastByteOfTagNum(octet) (octet & TAGNUM_b8)
-#define tagNumSetAsLast(octet) (octet & TAGNUM_B2_MASK)
 #define getLength(octet) (octet & LENGTH_MASK)
 #define lengthIsShortFmt(octet) (!(octet & LENGTH_FMT_MASK))
 
@@ -74,11 +44,6 @@ static bool parseTag(const uint8_t **pcur, const uint8_t *end, Tlv_t *tlv)
   return true;
 }
 
-static inline bool validateLengthLongFmtByteNum(uint8_t num)
-{
-  return (num >= LENGTH_LONGFMT_MINBYTES) && (num <= LENGTH_LONGFMT_MAXBYTES);
-}
-
 /**
  * parse the length part of encoding buffer pointed by *pcur
  * @param pcur the pointer of pointer to the current position of the buffer
@@ -89,28 +54,26 @@ static inline bool validateLengthLongFmtByteNum(uint8_t num)
  */
 static bool parseLength(const uint8_t **pcur, const uint8_t *end, Tlv_t *tlv)
 {
-  uint8_t octet = 0, numOfBytes = 0;
-  int i = 0;
+  uint8_t octet = 0;
 
   if (*pcur >= end) return false;
   octet = nextOctet(*pcur);
 
   if (lengthIsShortFmt(octet)) {
-    tlv->length = getLength(octet);
+    tlv->dataLen = getLength(octet);
     return true;
   }
 
   /* the following is handling long format */
-  numOfBytes = getLength(octet);
-  if (!validateLengthLongFmtByteNum(numOfBytes)) return false;
-  tlv->length = 0;
-  for (i = 0; i < numOfBytes; i++) {
-    if (*pcur >= end) return false;
-    octet = nextOctet(*pcur);
-    /* concatenate the octet to length */
-    tlv->length <<= LENGTH_LONGFMT_BITS;
-    tlv->length |= octet;
-  }
+
+  /* only 1 is supported, hard coded here because the octet
+     handling is also hard code here */
+  if (getLength(octet) != 1) return false;
+
+  if (*pcur >= end) return false;
+  octet = nextOctet(*pcur);
+  tlv->dataLen = octet;
+
   return true;
 }
 
@@ -125,7 +88,7 @@ static bool parseLength(const uint8_t **pcur, const uint8_t *end, Tlv_t *tlv)
 static bool parseValue(const uint8_t **pcur, const uint8_t *end, Tlv_t *tlv)
 {
   /* if not all content are in the buffer */
-  if ((*pcur + tlv->length) > end) return false;
+  if ((*pcur + TlvDataLen(tlv)) > end) return false;
 
   tlv->value = (uint8_t *)(*pcur);
   return true;
@@ -161,34 +124,8 @@ bool TlvParse(const uint8_t *buffer, size_t length, Tlv_t *tlv)
   if (!parseTag(&cur, end, tlv)) return false;
   if (!parseLength(&cur, end, tlv)) return false;
   if (!parseValue(&cur, end, tlv)) return false;
+  tlv->dataCapacity = (size_t)TlvDataLen(tlv);
   return true;
-}
-
-static inline uint16_t TagToUint16(Tag_t tag)
-{
-  uint16_t encoded = 0;
-
-  encoded |= TagTagClass(&tag) << TAGCLASS_SHIFT;
-  encoded |= TagIsConstructed(&tag) << ISCONSTRUCTED_SHIFT;
-  if (tagNumIsIn1Byte(TagTagNum(&tag))) {
-    SET_U16_LOWHALF(encoded, TagTagNum(&tag));
-  } else {
-    SET_U16_LOWHALF(encoded, TAGNUM_MULTIBYTES_LEADING);
-    SET_U16_HIHALF(encoded,tagNumSetAsLast(TagTagNum(&tag)));
-  }
-  return encoded;
-}
-
-/**
- * Compare the input encoded tag with the tag object
- * @param encoded the input encoded tag, it should be encoded in a way that
- * lower octet is the first octet.
- * @param tag the input tag object
- * @return true if tags are the same, otherwise false
- */
-static bool TagIsMatch(uint16_t encoded, Tag_t tag)
-{
-  return encoded == TagToUint16(tag);
 }
 
 bool TlvSearchTag(const uint8_t *buffer, size_t length, uint16_t tag,
@@ -209,7 +146,7 @@ bool TlvSearchTag(const uint8_t *buffer, size_t length, uint16_t tag,
 
     /* search depth first */
     if (recursive && TagIsConstructed(&tlv->tag)) {
-      if (TlvSearchTag(TlvValue(tlv), TlvLength(tlv),
+      if (TlvSearchTag(TlvValue(tlv), TlvDataLen(tlv),
                       tag, true, tlv)) {
         return true;
       }
