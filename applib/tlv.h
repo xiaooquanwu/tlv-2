@@ -36,8 +36,6 @@ typedef uint8_t Length_t;
 #define getLength(octet) (octet & LENGTH_MASK)
 #define lengthIsShortFmt(octet) (!(octet & LENGTH_FMT_MASK))
 
-
-
 /** type for tlv object */
 typedef struct {
   /* tag */

@@ -1,9 +1,7 @@
 #include "TxnInfoCoder.h"
 #include "tlvEncoder.h"
 #include "tlvDecoder.h"
-#include "tag.h"
 #include <string.h>
-#include <stdio.h>
 
 bool TxnRef_encode(const char value[], Tlv_t *tlv)
 {
